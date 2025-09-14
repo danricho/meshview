@@ -41,6 +41,19 @@ td.nowrap {
 <div class="filter-container container">
     <div role="group">
         <input type="text" id="search-box" class="search-box" placeholder="Search by name or ID..." />
+        
+        {% if site_config.get("site", {}).get("search_term", False) %}
+        <script>
+          function find_mine(){
+            const element = document.querySelector('#search-box');
+            const event = new KeyboardEvent('input');
+            element.value = '{{site_config.get("site", {}).get("search_term", False)}}';
+            element.dispatchEvent(event);
+            return false;
+          }
+        </script>
+        <button onclick="find_mine()">{{site_config.get("site", {}).get("search_button", False)}}</button>
+        {% endif %}
 
         <select id="role-filter">
             <option value="">All Roles</option>
