@@ -9,7 +9,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Clone the repo with submodules
-RUN git clone --recurse-submodules https://github.com/pablorevilla-meshtastic/meshview.git /app
+RUN git clone --recurse-submodules https://github.com/danricho/meshview.git /app
 
 # Create virtual environment
 RUN python -m venv /app/env
