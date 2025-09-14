@@ -103,6 +103,14 @@
     {% block body %}{% endblock %}
 
     <div id="footer" class="container" style="text-align: center; padding: calc(var(--pico-spacing)); margin-top: calc(var(--pico-spacing)); border-top: var(--pico-border-width) solid var(--pico-form-element-border-color);">  
+        {% if site.get("external_footer_links", "[]")|length > 0 %}
+        <div style="margin: calc(var(--pico-spacing)/2) 0;">
+          {% for l in site.get("external_footer_links", "[]") %}
+            {{ "| " if not loop.first }}<a href="{{l[1]}}" target="_blank">{{l[0]}}</a>
+          {% endfor %}
+        </div>        
+        {% endif %}
+      
         {% include "search_form.html" %}
         <div>
           Visit <strong><a href="https://github.com/pablorevilla-meshtastic/meshview" target="_blank">Meshview</a></strong> on Github.
