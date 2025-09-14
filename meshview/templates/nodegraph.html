@@ -7,69 +7,51 @@
 {% block css %}
 #mynetwork {
     width: 100%;
-    height: 100vh;
-    border: 1px solid #ddd;
-    background-color: #f8f9fa;
-    border-radius: 10px;
+    height: 1000px;
+    max-height: 75vh;
+    background-color: var(--pico-muted-border-color);
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
-.search-container {
-    position: absolute;
-    bottom: 100px;
-    left: 10px;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-.search-container input,
-.search-container select,
-.search-container button {
-    padding: 8px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-}
-.search-container button {
-    background-color: #007bff;
-    color: white;
-    cursor: pointer;
-}
-.search-container button:hover {
-    background-color: #0056b3;
-}
+
 #node-info {
     position: absolute;
-    bottom: 10px;
+    top: 10px;
     right: 10px;
-    background-color: rgba(255,255,255,0.95);
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    font-size: 14px;
-    color: #333;
+    background-color: var(--pico-background-color);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--pico-color);
     width: 260px;
     max-height: 250px;
     overflow-y: auto;
 }
-#legend {
+#legend-search {  
     position: absolute;
-    bottom: 10px;
+    top: 10px;
     left: 10px;
-    background: rgba(255,255,255,0.9);
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    font-size: 14px;
-    display: flex;
-    color: #333;
 }
-.legend-category {
-    margin-right: 10px;
-    code {
-        color: inherit;
-    }
+.search-container {
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
+}
+.search-container input,
+.search-container select,
+.search-container button {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+#legend {    
+    background-color: var(--pico-background-color);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-size: 0.9rem;
+    color: var(--pico-color);
 }
 .legend-box {
     display: inline-block;
@@ -77,47 +59,49 @@
     height: 12px;
     margin-right: 5px;
     border-radius: 3px;
-    &.circle {
-        border-radius: 6px;
-    }
 }
 {% endblock %}
 
 {% block body %}
+<div style="position: relative;" class="hide-lt-xl">
+  
+
+  <div id="node-info">
+      <b>Long Name:</b> <span id="node-long-name"></span><br>
+      <b>Short Name:</b> <span id="node-short-name"></span><br>
+      <b>Role:</b> <span id="node-role"></span><br>
+      <b>Hardware Model:</b> <span id="node-hw-model"></span>
+  </div>
+
+  <div id="legend-search">
+    <div id="legend">
+        <!-- <div class="legend-category">
+            <div><span class="legend-box" style="background-color: #ff5733"></span> Traceroute</div>
+            <div><span class="legend-box" style="background-color: #049acd"></span> Neighbor</div>
+        </div> -->
+        <div class="legend-category">
+            <div><span class="legend-box circle" style="background-color: #ff5733"></span> <code>ROUTER</code></div>
+            <div><span class="legend-box circle" style="background-color: #b65224"></span> <code>ROUTER_LATE</code></div>
+        </div>
+        <div class="legend-category">
+            <div><span class="legend-box circle" style="background-color: #007bff"></span> <code>CLIENT</code></div>
+            <div><span class="legend-box circle" style="background-color: #00c3ff"></span> <code>CLIENT_MUTE</code></div>
+        </div>
+        <div class="legend-category">
+            <div><span class="legend-box circle" style="background-color: #ffbf00"></span> Other</div>
+            <div><span class="legend-box circle" style="background-color: #6c757d"></span> Unknown</div>
+        </div>
+    </div>
+    <div class="search-container">
+      <select id="channel-select" onchange="filterByChannel()"></select>
+      <input type="text" id="node-search" placeholder="Search node...">
+      <button onclick="searchNode()">Search</button>
+  </div>
+  </div>
+
+</div>
+
 <div id="mynetwork"></div>
-
-<div class="search-container">
-    <label for="channel-select" style="color:#333;">Channel:</label>
-    <select id="channel-select" onchange="filterByChannel()"></select>
-    <input type="text" id="node-search" placeholder="Search node...">
-    <button onclick="searchNode()">Search</button>
-</div>
-
-<div id="node-info">
-    <b>Long Name:</b> <span id="node-long-name"></span><br>
-    <b>Short Name:</b> <span id="node-short-name"></span><br>
-    <b>Role:</b> <span id="node-role"></span><br>
-    <b>Hardware Model:</b> <span id="node-hw-model"></span>
-</div>
-
-<div id="legend">
-    <div class="legend-category">
-        <div><span class="legend-box" style="background-color: #ff5733"></span> Traceroute</div>
-        <div><span class="legend-box" style="background-color: #049acd"></span> Neighbor</div>
-    </div>
-    <div class="legend-category">
-        <div><span class="legend-box circle" style="background-color: #ff5733"></span> <code>ROUTER</code></div>
-        <div><span class="legend-box circle" style="background-color: #b65224"></span> <code>ROUTER_LATE</code></div>
-    </div>
-    <div class="legend-category">
-        <div><span class="legend-box circle" style="background-color: #007bff"></span> <code>CLIENT</code></div>
-        <div><span class="legend-box circle" style="background-color: #00c3ff"></span> <code>CLIENT_MUTE</code></div>
-    </div>
-    <div class="legend-category">
-        <div><span class="legend-box circle" style="background-color: #ffbf00"></span> Other</div>
-        <div><span class="legend-box circle" style="background-color: #6c757d"></span> Unknown</div>
-    </div>
-</div>
 
 <script>
 const chart = echarts.init(document.getElementById('mynetwork'));
@@ -125,7 +109,7 @@ const chart = echarts.init(document.getElementById('mynetwork'));
 const colors = {
     edge: {
         traceroute: '#ff5733',
-        neighbor: '#049acd',
+        neighbor: '#ff5733',
     },
     role: {
         ROUTER: '#ff5733',
@@ -146,8 +130,8 @@ function getRoleColor(role) {
 
 function getSymbolSize (role) {
     switch (role) {
-        case 'ROUTER': return 30;
-        case 'ROUTER_LATE': return 30;
+        case 'ROUTER': return 25;
+        case 'ROUTER_LATE': return 20;
         case 'CLIENT': return 15;
         case 'CLIENT_MUTE': return 7;
         default: return 15; // Unknown or other roles
@@ -171,7 +155,7 @@ const nodes = [
     symbol: 'circle',
     symbolSize: getSymbolSize({{node.role | tojson}}),
     itemStyle: { color: getRoleColor({{node.role | tojson}}), opacity:1 },
-    label: { show:true, position:'right', color:'#333', fontSize:12, formatter: (p)=>p.data.value },
+    label: { show:true, position:'right', color:'#fff', fontSize:12, formatter: (p)=>p.data.value },
     long_name: {{ node.long_name | tojson }},
     short_name: {{ node.short_name | tojson }},
     role: {{ node.role | tojson }},
@@ -190,7 +174,7 @@ const edges = [
     originalColor: colors.edge[{{edge.type | tojson}}],
     lineStyle: {
         color: colors.edge[{{edge.type | tojson}}],
-        width: {{edge.weight | tojson}},
+        width: 2,
     },
 },
 {% endfor %}
@@ -225,7 +209,7 @@ function filterByChannel() {
 
 function updateChart() {
     const updatedNodes = filteredNodes.map(node=>{
-        let opacity=1, color=getRoleColor(node.role), borderColor='transparent', borderWidth=6;
+        let opacity=1, color=getRoleColor(node.role), borderColor='transparent', borderWidth=3;
         if(lastSelectedNode){
             const connected = filteredEdges.some(e=>
                 (e.source===node.name && e.target===lastSelectedNode) ||
@@ -236,21 +220,21 @@ function updateChart() {
                 borderColor=colors.selection;
             }
             else if(connected) opacity=1;
-            else opacity=0.4;
+            else opacity=0.6;
         }
         return {...node, itemStyle:{...node.itemStyle, color,opacity, borderColor, borderWidth}};
     });
 
     const updatedEdges = filteredEdges.map(edge=>{
-        let opacity=0.1, width=edge.lineStyle.width;
+        let opacity=0.3, width=edge.lineStyle.width;
         if(lastSelectedNode){
             const connected = edge.source===lastSelectedNode || edge.target===lastSelectedNode;
-            opacity=connected?1:0.05; width=edge.lineStyle.width;
+            opacity=connected?1:0.3; width=edge.lineStyle.width;
         }
         return {...edge, lineStyle:{color:edge.originalColor||'#d3d3d3', width, opacity}};
     });
 
-    chart.setOption({series:[{type:'graph', layout:'force', data:updatedNodes, links:updatedEdges, roam:true, force:{repulsion:200, edgeLength:[80,120]}}]});
+    chart.setOption({series:[{type:'graph', layout:'force', data:updatedNodes, links:updatedEdges, roam:true, force:{repulsion:250, edgeLength:[80,120]}}]});
 }
 
 chart.on('click', function(params){

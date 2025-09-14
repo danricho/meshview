@@ -1,36 +1,27 @@
 <div id="details_map"></div>
 
 {% for seen in packets_seen %}
-<div class="card mt-2">
-    <div class="card-header">
-        {{seen.node.long_name}}(
+<article style="margin: calc(var(--pico-spacing)) 0;">
+  <header id="node_color" style="text-align: center;">{{seen.node.long_name}} (
         <a hx-target="#node" href="/node_search?q={{seen.node_id|node_id_to_hex}}">
         {{seen.node_id|node_id_to_hex}}
         </a>
-        )
-    </div>
-    <div class="card-body">
-        <div class="card-text text-start">
-            <dl>
-                <dt>Import Time</dt>
-                <dd>{{seen.import_time.strftime('%-I:%M:%S %p - %m-%d-%Y')}}</dd>
-                <dt>rx_time</dt>
-                <dd>{{seen.rx_time|format_timestamp}}</dd>
-                <dt>hop_limit</dt>
-                <dd>{{seen.hop_limit}}</dd>
-                <dt>hop_start</dt>
-                <dd>{{seen.hop_start}}</dd>
-                <dt>channel</dt>
-                <dd>{{seen.channel}}</dd>
-                <dt>rx_snr</dt>
-                <dd>{{seen.rx_snr}}</dd>
-                <dt>rx_rssi</dt>
-                <dd>{{seen.rx_rssi}}</dd>
-                <dt>topic</dt>
-                <dd>{{seen.topic}}</dd>
-            </dl>
-        </div>
-    </div>
+        )</header>
+  {% if trace %}<div id="map" style="margin-bottom: calc(var(--pico-spacing));"></div>{% endif %}
+  <div style="text-align: center;">
+    <strong>Import Time</strong> : {{seen.import_time.strftime('%-I:%M:%S %p - %m-%d-%Y')}}<br />
+    <strong>rx_time</strong> : {{seen.rx_time|format_timestamp}}<br />
+    <strong>hop_limit</strong> : {{seen.hop_limit}}<br />
+    <strong>hop_start</strong> : {{seen.hop_start}}<br />
+    <strong>channel</strong> : {{seen.channel}}<br />
+    <strong>rx_snr</strong> : {{seen.rx_snr}}<br />
+    <strong>rx_rssi</strong> : {{seen.rx_rssi}}<br />
+    <strong>topic</strong> : {{seen.topic}}
+  </div>
+  
+  <footer style="text-align: center;"><small>Last Update: {{ seen.import_time.strftime('%Y-%m-%d') if seen.import_time }}</span> {{ seen.import_time.strftime('%H:%M:%S') if seen.import_time else "N/A" }}</small></footer>
+</article>
+
 </div>
 {% endfor %}
 

@@ -39,52 +39,38 @@
                 <!-- Node Information Card -->
                 <div class="card" id="node_info">
                     {% if node %}
-                    <div class="card-header" id="node_color">
-                        <strong style="margin-right: 1em ; margin-left: 1em; font-size: x-large;">{{node.short_name}}</strong>
-                        <p style="margin-bottom: 0px; font-size: large; font-weight: bold;">{{node.long_name}}</p>
-                        </div>
-                        <div class="card-body">
-                            <dl >
-                                {% if trace %}
-                                <dd id="map"></dd>
-                                {% endif %}
-                                <dt>NodeID</dt>
-                                <dd>{{node.node_id|node_id_to_hex}}</dd>
-                                <dt>Channel</dt>
-                                <dd>{{node.channel}}</dd>
-                                <dt>HW Model</dt>
-                                <dd>{{node.hw_model}}</dd>
-                                <dt>Role</dt>
-                                <dd>{{node.role}}</dd>
-                                {% if node.firmware %}
-                                <dt>Firmware</dt>
-                                <dd>{{node.firmware}}</dd>
-                                {% endif %}
-                            </dl>
-                        <a href="/top?node_id={{node.node_id}}" >Get node traffic totals</a>
+                    <article>
+                      <header id="node_color" style="text-align: center;"><strong>{{node.long_name}} ({{node.short_name}})</strong></header>
+                      {% if trace %}<div id="map" style="margin-bottom: calc(var(--pico-spacing));"></div>{% endif %}
+                      <div style="text-align: center;">
+                        <strong>NodeID</strong> : {{node.node_id|node_id_to_hex}}<br />
+                        <strong>Channel</strong> : {{node.channel}}<br />
+                        <strong>HW Model</strong> : {{node.hw_model}}<br />
+                        <strong>Role</strong> : {{node.role}}
+                        {% if node.firmware %}<br /><strong>Firmware</strong> : {{node.firmware}}{% endif %}            
+                        <br /><a href="/top?node_id={{node.node_id}}" >Get node traffic totals</a>
+                        <hr />
                         {% include "node_graphs.html" %}
-                    </div>
+                      </div>
+                      
+                      <footer style="text-align: center;"><small>Last Update: {{ node.last_update.strftime('%Y-%m-%d') if node.last_update }}</span> {{ node.last_update.strftime('%H:%M:%S') if node.last_update else "N/A" }}</small></footer>
+                    </article>
+
                     {% else %}
-                    <div class="card-body">
-                        A NodeInfo has not been seen.
-                    </div>
+                    <article>
+                      <header id="node_color">Not Seen</header>
+                      A NodeInfo has not been seen
+                      <footer></footer>
+                    </article>
                     {% endif %}
+                    
                 </div>
             </div>
         </div>
 
-        <div class="row">
-            <div class="col">
-                <!-- Additional buttons can be included here -->
-            </div>
-        </div>
+        <div style="margin: calc(var(--pico-spacing)) 0;"><strong>Packet List</strong></div>
+        {% include 'packet_list.html' %}
 
-        <div class="row">
-            <div class="col">
-                {% include 'packet_list.html' %}
-            </div>
-            <!-- <div class="col sticky-top" id="packet_details"></div> -->
-        </div>
     </div>
 </div>
 
@@ -100,11 +86,9 @@
         parseInt(hex[2], 16),
         parseInt(hex[3], 16),
     ];
-
     const brightness = Math.round(((parseInt(text_color[0]) * 299) +
                       (parseInt(text_color[1]) * 587) +
                       (parseInt(text_color[2]) * 114)) / 1000);
-
     if (brightness > 125) {
         var textColor = '#212529'
         node_color.style.color = textColor
@@ -114,7 +98,7 @@
 {% if trace %}
 <script>
     var trace = {{ trace | tojson }}; // Load trace data into JavaScript
-    var map = L.map('map').setView(trace[0], 13); // Initialize map centered at first trace point
+    var map = L.map('map', { zoomControl: false }).setView(trace[0], 13); // Initialize map centered at first trace point
     var markers = L.featureGroup(); // Create a feature group for markers
     markers.addTo(map);
 

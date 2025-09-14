@@ -1,37 +1,22 @@
 {% macro graph(name) %}
-<div id="{{name}}Chart" style="width: 100%; height: 100%;"></div>
+<div id="{{name}}Chart" style="width: 100%; height: 50vh;"></div>
 {% endmacro %}
 
-<!-- Download and Expand buttons -->
-<div class="d-flex justify-content-end mb-2">
-  <button class="btn btn-sm btn-outline-light me-2" id="downloadCsvBtn">Download CSV</button>
-  <button class="btn btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#fullChartModal">Expand</button>
-</div>
-
-<!-- Tab Navigation -->
-<ul class="nav nav-tabs" role="tablist">
+<div style="margin: calc(var(--pico-spacing)) 0;">
   {% for name in [
       "power", "utilization", "temperature", "humidity", "pressure",
       "iaq", "wind_speed", "wind_direction", "power_metrics", "neighbors"
   ] %}
-  <li class="nav-item" role="presentation">
-    <button class="nav-link {% if loop.first %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#{{name}}Tab" type="button" role="tab">{{ name | capitalize }}</button>
-  </li>
-  {% endfor %}
-</ul>
 
-<!-- Tab Content -->
-<div class="tab-content mt-3" style="height: 40vh;">
-  {% for name in [
-      "power", "utilization", "temperature", "humidity", "pressure",
-      "iaq", "wind_speed", "wind_direction", "power_metrics", "neighbors"
-  ] %}
-  <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="{{name}}Tab" role="tabpanel" style="height: 100%;">
+  <details name="{{ name }}" style="padding-bottom: calc(var(--pico-spacing));{% if not loop.last %} border-bottom: 1px solid var(--pico-muted-border-color);{%endif%}">
+    <summary>{{ name | capitalize }}</summary>
+    <div>
     {{ graph(name) | safe }}
-  </div>
+    </div>
+  </details> 
   {% endfor %}
 </div>
-
+{#
 <!-- Fullscreen Modal -->
 <div class="modal fade" id="fullChartModal" tabindex="-1" aria-labelledby="fullChartModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-fullscreen">
@@ -46,6 +31,7 @@
     </div>
   </div>
 </div>
+#}
 
 <!-- ECharts Library -->
 <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
@@ -142,26 +128,18 @@ document.addEventListener("DOMContentLoaded", function () {
       currentChartData = null;
       currentChartName = null;
       chartDiv.innerHTML = `<div class="text-white text-center mt-5">Error loading ${name} data.</div>`;
+      chartDiv.style.height = '';
+      chartDiv.parentElement.parentElement.classList.add("hide");
       return null;
     }
   }
 
-  // Load first chart
-  const firstTabBtn = document.querySelector('.nav-tabs button.nav-link.active');
-  if (firstTabBtn) {
-    const name = firstTabBtn.textContent.toLowerCase();
-    const chartId = `${name}Chart`;
-    loadChart(name, chartId).then(chart => currentChart = chart);
-  }
-
-  // On tab switch
-  document.querySelectorAll('.nav-tabs button.nav-link').forEach(button => {
-    button.addEventListener('shown.bs.tab', event => {
-      const name = event.target.textContent.toLowerCase();
-      const chartId = `${name}Chart`;
-      loadChart(name, chartId).then(chart => currentChart = chart);
-    });
-  });
+  {% for name in [
+      "power", "utilization", "temperature", "humidity", "pressure",
+      "iaq", "wind_speed", "wind_direction", "power_metrics", "neighbors"
+  ] %}
+  loadChart('{{name}}', '{{name}}Chart');
+  {% endfor %}
 
   // CSV Download
   document.getElementById('downloadCsvBtn').addEventListener('click', () => {
@@ -188,71 +166,6 @@ document.addEventListener("DOMContentLoaded", function () {
     a.download = `${currentChartName}_{{ node_id }}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-  });
-
-  // Fullscreen modal chart
-  document.getElementById('fullChartModal').addEventListener('shown.bs.modal', () => {
-    if (!currentChartData || !currentChartName) return;
-
-    if (!fullChart) {
-      fullChart = echarts.init(document.getElementById('fullChartContainer'));
-    }
-
-    const isDualAxis = currentChartName === 'power';
-
-    fullChart.setOption({
-      title: { text: currentChartName.charAt(0).toUpperCase() + currentChartName.slice(1), textStyle: { color: '#fff' } },
-      tooltip: {
-        trigger: 'axis',
-        formatter: function (params) {
-          return params.map(p => {
-            const label = p.seriesName.toLowerCase();
-            const unit = label.includes('volt') ? 'V' : label.includes('battery') ? '%' : '';
-            return `${p.marker} ${p.seriesName}: ${p.data}${unit}`;
-          }).join('<br>');
-        }
-      },
-      xAxis: {
-        type: 'category',
-        data: currentChartData.timestamps,
-        axisLabel: { color: '#fff', rotate: 45 },
-      },
-      yAxis: isDualAxis ? [
-        {
-          type: 'value',
-          name: 'Battery (%)',
-          min: 0,
-          max: 120,
-          position: 'left',
-          axisLabel: { color: '#fff' },
-          nameTextStyle: { color: '#fff' }
-        },
-        {
-          type: 'value',
-          name: 'Voltage (V)',
-          min: 0,
-          max: 6,
-          position: 'right',
-          axisLabel: { color: '#fff' },
-          nameTextStyle: { color: '#fff' }
-        }
-      ] : {
-        type: 'value',
-        axisLabel: { color: '#fff' },
-      },
-      series: currentChartData.series.map(s => ({
-        name: s.name,
-        type: 'line',
-        data: s.data,
-        smooth: true,
-        connectNulls: true,
-        showSymbol: false,
-        yAxisIndex: isDualAxis && s.name.toLowerCase().includes('volt') ? 1 : 0,
-      })),
-      legend: { textStyle: { color: '#fff' } }
-    });
-
-    fullChart.resize();
   });
 
   window.addEventListener('resize', () => {
