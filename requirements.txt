@@ -42,3 +42,6 @@ pillow~=11.1.0
 # Debugging / profiling
 psutil~=7.0.0
 objgraph~=3.6.2
+
+# Add-on for traceroute triggering
+meshtastic

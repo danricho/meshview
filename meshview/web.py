@@ -22,6 +22,8 @@ from aiohttp import web
 import re
 import traceback
 import pathlib
+import meshtastic.tcp_interface
+import threading
 
 SEQ_REGEX = re.compile(r"seq \d+")
 SOFTWARE_RELEASE= "2.0.6 ~ 12-Sept-2025 - My Branch"
@@ -182,6 +184,50 @@ routes = web.RouteTableDef()
 @routes.get("/")
 async def index(request):
     raise web.HTTPFound(location="/map")
+
+tracing_task = None
+@routes.get("/do-traceroute/{node_id}")
+async def dotraceroute(request):
+    
+    if not CONFIG.get("site", {}).get("enable_traceroute", False):
+        return web.Response(text=json.dumps({"result": "Failed", "message": "Traceroute feature is disabled."}), content_type="text/json")   
+
+    host = CONFIG.get("site", {}).get("local_node_host", False)
+    if not host:
+        return web.Response(text=json.dumps({"result": "Failed", "message": "Local Wifi host not configured."}), content_type="text/json")   
+
+    hopLimit = int(CONFIG.get("site", {}).get("trouceroute_max_hops", 7))
+    channelIndex = int(CONFIG.get("site", {}).get("trouceroute_channel", 0))
+
+    global tracing_task
+
+    node_id = int(request.match_info["node_id"])
+    # Run tasks concurrently
+    async with asyncio.TaskGroup() as tg:
+        node_task = tg.create_task(store.get_node(node_id))
+    # Await task results
+    node = await node_task
+    if node is None:
+        return web.Response(text=json.dumps({"result": "Failed", "message": "Unknown Node"}), content_type="text/json")            
+
+    if tracing_task != None:
+        if tracing_task.is_alive():
+            return web.Response(text=json.dumps({"result": "Failed", "message": "Busy - Please Wait"}), content_type="text/json")   
+        else: 
+            tracing_task = None
+
+    def commandit(host, nodeid, hopLimit, channelIndex):
+        # try:
+            interface = meshtastic.tcp_interface.TCPInterface(host)   
+            interface.sendTraceRoute(nodeid, hopLimit, channelIndex=channelIndex)
+        # except:
+            # pass
+
+    tracing_task = threading.Thread(target=commandit, args=(host, node_id, hopLimit, channelIndex))
+    tracing_task.daemon = True
+    tracing_task.start()
+
+    return web.Response(text=json.dumps({"result": "Succeeded", "message": f"Traceroute Started<br />HOST: {host}, CH{channelIndex}, < {hopLimit} HOPS"}), content_type="text/json")
 
 
 def generate_response(request, body, raw_node_id="", node=None):
