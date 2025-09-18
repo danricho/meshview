@@ -64,7 +64,7 @@
 {% block body %}
 <div id="toast-container" style="position: fixed; top: 1rem; right: 1rem; z-index: 9999;"></div>
 
-<div id="node" class="container text-center">
+<div id="node">
     <div class="container">
         <div class="row">
             <div class="col mb-3">
@@ -83,8 +83,9 @@
                         <br /><button class="" style="margin: calc(var(--pico-spacing)) 0;" onclick="doTraceRoute()">TraceRoute</button>
                         <br /><a href="/top?node_id={{node.node_id}}" >Get node traffic totals</a>
                         <hr />
-                        {% include "node_graphs.html" %}
                       </div>
+                      {% include "node_graphs.html" %}
+                      
                       
                       <footer style="text-align: center;"><small>Last Update: {{ node.last_update.strftime('%Y-%m-%d') if node.last_update }}</span> {{ node.last_update.strftime('%H:%M:%S') if node.last_update else "N/A" }}</small></footer>
                     </article>
