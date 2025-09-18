@@ -26,7 +26,7 @@ import meshtastic.tcp_interface
 import threading
 
 SEQ_REGEX = re.compile(r"seq \d+")
-SOFTWARE_RELEASE= "18-Sept-2025 - My Branch"
+SOFTWARE_RELEASE= "dr.2025-09-18"
 CONFIG = config.CONFIG
 
 env = Environment(loader=PackageLoader("meshview"), autoescape=select_autoescape())
@@ -227,7 +227,7 @@ async def dotraceroute(request):
     tracing_task.daemon = True
     tracing_task.start()
 
-    return web.Response(text=json.dumps({"result": "Succeeded", "message": f"Traceroute Started<br />HOST: {host}, CH{channelIndex}, < {hopLimit} HOPS"}), content_type="text/json")
+    return web.Response(text=json.dumps({"result": "Commanded", "message": f"HOST: {host}, CH{channelIndex}, < {hopLimit} HOPS"}), content_type="text/json")
 
 
 def generate_response(request, body, raw_node_id="", node=None):
