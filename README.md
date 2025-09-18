@@ -3,7 +3,15 @@
 ![Start Page](screenshots/animated.gif)
 
 The project serves as a real-time monitoring and diagnostic tool for the Meshtastic mesh network. It provides detailed insights into the network's activity, including message traffic, node positions, and telemetry data.
+
+### pablorevilla-meshtastic Version 2.0.7 update - September 2025
+* New capability to automatically trim the database to a keep specific amount of days of data
+* Added configuaration of intervals for both the Live Map and the Firehose pages
+
 ### Version 2.0.6 update - August 2025
+
+*danricho branches here with cherrypicked changes upward from here (by review)*
+
 * New Live Map (Shows packet feed live)
 * New API /api/config (See API documentation)
 * New API /api/edges (See API documentation)

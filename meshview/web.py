@@ -26,7 +26,7 @@ import meshtastic.tcp_interface
 import threading
 
 SEQ_REGEX = re.compile(r"seq \d+")
-SOFTWARE_RELEASE= "2.0.6 ~ 12-Sept-2025 - My Branch"
+SOFTWARE_RELEASE= "18-Sept-2025 - My Branch"
 CONFIG = config.CONFIG
 
 env = Environment(loader=PackageLoader("meshview"), autoescape=select_autoescape())
@@ -1619,14 +1619,21 @@ async def api_stats(request):
     return web.json_response(stats)
 
 
-
 @routes.get("/api/config")
 async def api_config(request):
     try:
-        # Return CONFIG as JSON
-        return web.json_response(CONFIG)
+        site = CONFIG.get("site", {})
+        safe_site = {
+            "map_interval": site.get("map_interval", 3),        # default 3 if missing
+            "firehose_interval": site.get("firehose_interval", 3)  # default 1000 if missing
+        }
+
+        safe_config = {"site": safe_site}
+
+        return web.json_response(safe_config)
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500)
+
 
 @routes.get("/api/edges")
 async def api_edges(request):
