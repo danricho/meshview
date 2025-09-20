@@ -62,23 +62,58 @@
     // ---- Node Data ----
     var markers = {};
     var markerById = {};
-    var nodes = [
-        {% for node in nodes %}
-        {
-            lat: {{ ((node.last_lat / 10**7) + (range(-20,20) | random) / 30000) | round(7) }},
-            long: {{ ((node.last_long / 10**7) + (range(-20,20) | random) / 30000) | round(7) if node.last_long is not none else "null" }},
-            long_name: {{ (node.long_name or "") | tojson }},
-            short_name: {{ (node.short_name or "") | tojson }},
-            channel: {{ (node.channel or "") | tojson }},
-            hw_model: {{ (node.hw_model or "") | tojson }},
-            role: {{ (node.role or "") | tojson }},
-            last_update: {{ node.last_update | default("", true) | tojson }},
-            firmware: {{ (node.firmware or "") | tojson }},
-            id: {{ (node.node_id or "") | tojson }},
-            node_id: "{{ node.node_id|node_id_to_hex }}",
-            isRouter: {{ 'true' if 'router' in (node.role or '').lower() else 'false' }}
-        }{{ "," if not loop.last else "" }}
-        {% endfor %}
+    var nodes = [   
+
+        {%- set prev = namespace(lat=-1, long=-1, i=0) %}
+        {%- set offsets = [(1.0000, 0.0000),(0.5000, 0.8660),(-0.5000, 0.8660),(-1.0000, 0.0000),(-0.5000, -0.8660),(0.5000, -0.8660)] %}
+        
+        {#{%- for node in nodes|sort(attribute='role', reverse=True) %}#}
+
+        {%- for lat_node_group_value, lat_node_group in nodes | groupby('last_lat') %}
+        {%- for long_node_group_value, long_node_group in lat_node_group | groupby('last_long') %}
+        {%- for long_node_group_value, long_node_group in lat_node_group | groupby('role')|reverse %}
+        {%- for node in long_node_group|sort(attribute='short_name', reverse=True) %}
+
+        {%- if node.last_lat is not none and node.last_long is not none %}
+          
+          {
+              {%- if (node.last_lat-prev.lat)|abs < 30 and (node.last_long-prev.long)|abs < 30 -%}      
+              // DEBUG FOR DECONFLICT CO-LOCATION | {{prev.lat}}:{{node.last_lat}}:{{(node.last_lat-prev.lat)|abs}} | {{prev.long}}:{{node.last_long}}:{{(node.last_long-prev.long)|abs}}
+              // GROUPING: {{lat_node_group_value}}, {{long_node_group_value}}
+              
+              {% endif %}
+              
+              {%- if (node.last_lat-prev.lat)|abs < 30 and (node.last_long-prev.long)|abs < 30 %}
+              lat: {{ ((node.last_lat / 10**7) + (offsets[prev.i-1][0] * 30) / 30000) | round(7) }}, // deconflict by moving to surrounding circle (+{{offsets[prev.i-1][0]}})      
+              long: {{ ((node.last_long / 10**7) + (offsets[prev.i-1][1] * 30) / 30000) | round(7) }}, // deconflict by moving to surrounding circle (+{{offsets[prev.i-1][1]}})
+              {% else %}
+              lat: {{ node.last_lat / 10**7 if node.last_lat is not none else "null" }},
+              long: {{ node.last_long / 10**7 if node.last_long is not none else "null" }},
+              {% endif -%}
+
+              long_name: {{ (node.long_name or "") | tojson }},
+              short_name: {{ (node.short_name or "") | tojson }},
+              channel: {{ (node.channel or "") | tojson }},
+              hw_model: {{ (node.hw_model or "") | tojson }},
+              role: {{ (node.role or "") | tojson }},
+              last_update: {{ node.last_update | default("", true) | tojson }},
+              firmware: {{ (node.firmware or "") | tojson }},
+              id: {{ (node.node_id or "") | tojson }},
+              node_id: "{{ node.node_id|node_id_to_hex }}",
+              isRouter: {{ 'true' if 'router' in (node.role or '').lower() else 'false' }}
+          },
+          {%- if node.last_lat == prev.lat and node.last_long == prev.long %}   
+            {% set prev.i = (prev.i + 1)%6  %} 
+          {%- else %}
+            {% set prev.i = 1 %} 
+          {%- endif %}
+          {%- set prev.lat = node.last_lat %}
+          {%- set prev.long = node.last_long %}
+        {%- endif %}
+        {%- endfor %}
+        {%- endfor %}
+        {%- endfor %}
+        {%- endfor %}
     ];
 
     // ---- Helpers ----
@@ -263,9 +298,9 @@
                 if (!fromNode || !toNode) return;
                 if (isInvalidCoord(fromNode) || isInvalidCoord(toNode)) return;
 
-                const lineColor = "#003f5e"; //different than the node category colors
-                const dash = edge.type === "traceroute" ? "5,5" : null;
-                const weight = edge.type === "neighbor" ? 3 : 2;
+                const lineColor = "#e8b200"; //different than the node category colors
+                const dash = "5,0,5,0";
+                const weight = 5;
 
                 const polyline = L.polyline(
                     [[fromNode.lat, fromNode.long], [toNode.lat, toNode.long]],
