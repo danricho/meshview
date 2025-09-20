@@ -269,5 +269,9 @@ function searchNode(){
 
 populateChannelDropdown();
 window.addEventListener('resize', ()=>chart.resize());
+
+document.addEventListener('DOMContentLoaded', function() {
+  chart.resize();
+}, false);
 </script>
 {% endblock %}
