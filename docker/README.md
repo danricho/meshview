@@ -14,31 +14,16 @@ This Dockerfile builds a containerized version of the [MeshView](https://github.
 Build the Docker image:
 
 ```bash
-docker build -t meshview-docker .
+docker build -t meshview-docker-image .
 ```
 
-## Run Instructions
+## Run Instructions (docker-compose)
 
-Run the container:
+- Setup the config.ini (prior to building or with docker volume pointing to a new one).
+- Ensure that the packets.db file exists (use touch command) and use docker volume for persistence.
+- Configure the compose file.
+- Run the stack (docker-compose.yml). 
 
 ```bash
-docker run -d --name meshview-docker -p 8081:8081 meshview-docker
+docker-compose up -d
 ```
-
-This maps container port `8081` to your host. The application runs via:
-
-```bash
-/app/env/bin/python /app/mvrun.py
-```
-
-## Web Interface
-
-Once the container is running, you can access the MeshView web interface by visiting:
-
-http://localhost:8081
-
-If running on a remote server, replace `localhost` with the host's IP or domain name:
-
-http://<host>:8081
-
-Ensure that port `8081` is open and not blocked by a firewall or security group.
