@@ -21,7 +21,7 @@ services:
     container_name: meshview
     restart: unless-stopped
     ports:
-      - "3010:8081"
+      - "8081:8081"
     volumes:
       - /path/to/meshtastic/meshview/config.ini:/app/config.ini
       - /path/to/meshtastic/meshview/packets.db:/app/packets.db
