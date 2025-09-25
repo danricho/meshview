@@ -32,6 +32,18 @@
             border-radius: 4px;
             padding: 2px 5px;
         }
+        #map > div.leaflet-control-container > div.leaflet-top.leaflet-right > div > a {
+          background-color: unset;
+          margin: 0;
+          padding: 0;
+          display: block;
+        }
+        #map > div.leaflet-control-container > div.leaflet-top.leaflet-right > div.leaflet-control-layers-expanded > a {
+          display: none;
+        }
+        .leaflet-control-layers-list { margin-bottom: 0; }
+        .leaflet-control-layers label { color: var(--pico-background-color); }
+
     </style>
 {% endblock %}
 
@@ -53,10 +65,41 @@
 <script>
     // ---- Map Setup ----
     var map = L.map('map', { zoomControl: false });
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map);
+
+    var baseLayers = {};
+
+    // Sources thanks to https://github.com/JaraLowell/LoraLog
+    {% for l in site.get("base_map_layers", []) |reverse %}
+      
+      {% if l == "CARTO_LIGHT" %}
+        var baseTilesCartoLight = L.tileLayer("https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png", { maxZoom: 19, attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> | &copy; <a href="https://carto.com/attributions">CARTO</a>'}).addTo(map);
+        baseLayers["Carto.com: Light"] = baseTilesCartoLight;
+      {% elif l == "CARTO_DARK" %}
+        var baseTilesCartoDark = L.tileLayer("https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png", { maxZoom: 19, attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> | &copy; <a href="https://carto.com/attributions">CARTO</a>'}).addTo(map);
+        baseLayers["Carto.com: Dark"] = baseTilesCartoDark;
+      {% elif l == "CARTO_VOYAGER" %}
+        var baseTilesCartoVoyager = L.tileLayer("https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png", { maxZoom: 19, attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> | &copy; <a href="https://carto.com/attributions">CARTO</a>'}).addTo(map);
+        baseLayers["Carto.com: Voyager"] = baseTilesCartoVoyager;
+      {% elif l == "CARTO_DARK_SPOTIFY" %}
+        var baseTilesCartoDarkSpotify = L.tileLayer("https://basemaps.cartocdn.com/spotify_dark/{z}/{x}/{y}.png", { maxZoom: 19, attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> | &copy; <a href="https://carto.com/attributions">CARTO</a>'}).addTo(map);
+        baseLayers["Carto.com: Dark Spotify"] = baseTilesCartoDarkSpotify;
+      {% elif l == "OSM" %}
+        var baseTilesOpenStreetMap = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
+        baseLayers["Open Street Map"] = baseTilesOpenStreetMap;
+      {% elif l == "GOOGLE" %}
+        var baseTilesGoogleMaps = L.tileLayer("https://mt0.google.com/vt/lyrs=m&hl=en&x={x}&y={y}&z={z}&s=Ga", { maxZoom: 19, attribution: '&copy; Google Maps'}).addTo(map);
+        baseLayers["Google Maps: Standard"] = baseTilesGoogleMaps;
+      {% elif l == "GOOGLE_SAT" %}
+        var baseTilesGoogleSatellite = L.tileLayer("https://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}&s=Ga", { maxZoom: 19, attribution: '&copy; Google Maps'}).addTo(map);
+        baseLayers["Google Maps: Satellite"] = baseTilesGoogleSatellite;
+      {% elif l == "GOOGLE_HYBRID" %}
+        var baseTilesGoogleHybrid = L.tileLayer("https://mt0.google.com/vt/lyrs=s,h&hl=en&x={x}&y={y}&z={z}&s=Ga", { maxZoom: 19, attribution: '&copy; Google Maps'}).addTo(map);
+        baseLayers["Google Maps: Hybrid"] = baseTilesGoogleHybrid;
+      {% endif %}
+    {% endfor %}  
+  
+    L.control.layers(baseLayers).addTo(map);
+
     var allEdgesLayer = L.layerGroup().addTo(map);
 
     // ---- Node Data ----
