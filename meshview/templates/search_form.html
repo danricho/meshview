@@ -1,5 +1,5 @@
 <form class="container" id="search_form" action="/node_search">
-    <div role="group" style="margin-top: 0.25rem; max-width: 800px;">
+    <div role="group" style="margin-bottom: calc(var(--pico-spacing)); max-width: 800px;">
         <input class="" id="q" type="text" name="q" placeholder="Node id" autocomplete="off" list="node_options" value="{{raw_node_id}}" hx-trigger="input delay:100ms" hx-get="/node_match" hx-target="#node_options" />
         {% include "datalist.html" %}
         {% set options = {

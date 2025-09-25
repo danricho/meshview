@@ -180,10 +180,16 @@ env.filters["node_id_to_hex"] = node_id_to_hex
 env.filters["format_timestamp"] = format_timestamp
 
 routes = web.RouteTableDef()
-# Make the Map the home page
+
 @routes.get("/")
 async def index(request):
-    raise web.HTTPFound(location="/map")
+    """
+    Redirect root URL '/' to the page specified in CONFIG['site']['starting'].
+    Defaults to '/map' if not set.
+    """
+    # Get the starting page from config
+    starting_url = CONFIG["site"].get("starting", "/map")  # default to /map if not set
+    raise web.HTTPFound(location=starting_url)
 
 tracing_task = None
 @routes.get("/do-traceroute/{node_id}")
@@ -246,7 +252,6 @@ def generate_response(request, body, raw_node_id="", node=None):
     )
     return response
 
-
 @routes.get("/node_search")
 async def node_search(request):
     def parse_int(value, base=10):
@@ -289,7 +294,6 @@ async def node_search(request):
         ),
         content_type="text/html",
     )
-
 
 @routes.get("/node_match")
 async def node_match(request):

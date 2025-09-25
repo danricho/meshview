@@ -402,12 +402,15 @@
             .catch(err => console.error(err));
     }
 
-    // ---- Polling Control ----
+    // ---- Polling Control code ----
     let packetInterval = null;
+    const mapInterval = {{ site_config["site"]["map_interval"] | default(3) }}; // seconds
+
     function startPacketFetcher() {
+        if (mapInterval <= 0) return; // Don't fetch if interval is 0
         if (!packetInterval) {
             fetchLatestPacket();
-            packetInterval = setInterval(fetchNewPackets, 1000);
+            packetInterval = setInterval(fetchNewPackets, mapInterval * 1000);
         }
     }
 
@@ -424,7 +427,10 @@
     });
 
     // Init
-    fetchLatestPacket();
-    startPacketFetcher();
+    if (mapInterval > 0) {
+        fetchLatestPacket();
+        startPacketFetcher();
+    }
+
 </script>
 {% endblock %}
