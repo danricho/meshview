@@ -1,0 +1,24 @@
+
+{% if site.get("enable_messaging", False) %} 
+<div role="group" style="margin-top: calc(var(--pico-spacing)); max-width: 800px;">
+    <input class="" id="broadcast-message-text" type="text" name="message-text" placeholder="Broadcast message content...."  />
+        <select name="broadcast-message-channel" id="broadcast-message-channel">
+        {%- for channel in site.get("broadcast_message_channels", []) %}
+        <option value="{{channel[0]}}" {%- if loop.first %} selected{% endif %}>{{channel[1]}}</option>
+        {%- endfor %}
+    </select>
+    <button class="" onclick="sendBroadcastMessage()" >Send</button>
+</div>
+<script>
+  function sendBroadcastMessage(){
+  dataOut = { channel: document.getElementById('broadcast-message-channel').value, message: document.getElementById('broadcast-message-text').value };
+  document.getElementById('broadcast-message-text').value = "";
+  fetch('/send-message', {method: "POST", body: JSON.stringify( dataOut ) })
+    .then(res => res.json())
+    .then(data => {
+        showToast(`Text ${data.result}: ${data.message}`, type = data.result);
+    });
+  return false;
+}
+</script>
+{% endif %}

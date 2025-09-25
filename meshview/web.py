@@ -191,16 +191,69 @@ async def index(request):
     starting_url = CONFIG["site"].get("starting", "/map")  # default to /map if not set
     raise web.HTTPFound(location=starting_url)
 
+messaging_task = None
+@routes.post("/send-message")
+async def sendmessage(request):
+  
+    if not CONFIG.get("site", {}).get("enable_traceroute", False):
+      return web.Response(text=json.dumps({"result": "Failed", "message": "Failed - Messaging feature is disabled."}), content_type="text/json")   
+
+    host = CONFIG.get("site", {}).get("local_node_host", False)
+    if not host:
+        return web.Response(text=json.dumps({"result": "Failed", "message": "Failed - Local Wifi host not configured."}), content_type="text/json")   
+
+    global messaging_task
+
+    if messaging_task != None:
+        if messaging_task.is_alive():
+            return web.Response(text=json.dumps({"result": "Failed", "message": "Busy - Please Wait"}), content_type="text/json")   
+        else: 
+            messaging_task = None
+    
+    data = await request.json()
+    print(data)
+    
+    if data.get('destination', None):
+      async with asyncio.TaskGroup() as tg:
+          node_task = tg.create_task(store.get_node(data.get('destination')))
+      node = await node_task
+      if node is None:
+          return web.Response(text=json.dumps({"result": "Failed", "message": "Failed - Unknown Node"}), content_type="text/json")
+
+      def privatemessage(host, nodeid, msg):
+          interface = meshtastic.tcp_interface.TCPInterface(host)   
+          interface.sendText(msg, destinationId=nodeid)
+
+      messaging_task = threading.Thread(target=privatemessage, args=(host, data.get('destination'), data.get('message')))
+      messaging_task.daemon = True
+      messaging_task.start()
+
+      # return web.Response(text=json.dumps({"result": "Commanded", "message": f"Sent message '{data.get('message')}' to {data.get('destination')}"}), content_type="text/json")
+      return web.Response(text=json.dumps({"result": "Normal", "message": f"Commanded private message to {data.get('destination')}"}), content_type="text/json")
+          
+    if data.get('channel', None):    
+
+      def broadcastmessage(host, channelIndex, msg):
+          interface = meshtastic.tcp_interface.TCPInterface(host)   
+          interface.sendText(msg, channelIndex=1)
+
+      messaging_task = threading.Thread(target=broadcastmessage, args=(host, data.get('channel'), data.get('message')))
+      messaging_task.daemon = True
+      messaging_task.start()
+
+      # return web.Response(text=json.dumps({"result": "Commanded", "message": f"Sent message '{data.get('message')}' to channel {data.get('channel')}"}), content_type="text/json")
+      return web.Response(text=json.dumps({"result": "Normal", "message": f"Commanded boradcast message on Channel {data.get('channel')}"}), content_type="text/json")
+    
 tracing_task = None
 @routes.get("/do-traceroute/{node_id}")
 async def dotraceroute(request):
     
     if not CONFIG.get("site", {}).get("enable_traceroute", False):
-        return web.Response(text=json.dumps({"result": "Failed", "message": "Traceroute feature is disabled."}), content_type="text/json")   
+        return web.Response(text=json.dumps({"result": "Failed", "message": "Failed - Traceroute feature is disabled."}), content_type="text/json")   
 
     host = CONFIG.get("site", {}).get("local_node_host", False)
     if not host:
-        return web.Response(text=json.dumps({"result": "Failed", "message": "Local Wifi host not configured."}), content_type="text/json")   
+        return web.Response(text=json.dumps({"result": "Failed", "message": "Failed - Local Wifi host not configured."}), content_type="text/json")   
 
     hopLimit = int(CONFIG.get("site", {}).get("trouceroute_max_hops", 7))
     channelIndex = int(CONFIG.get("site", {}).get("trouceroute_channel", 0))
@@ -208,13 +261,11 @@ async def dotraceroute(request):
     global tracing_task
 
     node_id = int(request.match_info["node_id"])
-    # Run tasks concurrently
     async with asyncio.TaskGroup() as tg:
         node_task = tg.create_task(store.get_node(node_id))
-    # Await task results
     node = await node_task
     if node is None:
-        return web.Response(text=json.dumps({"result": "Failed", "message": "Unknown Node"}), content_type="text/json")            
+        return web.Response(text=json.dumps({"result": "Failed", "message": "Failed - Unknown Node"}), content_type="text/json")            
 
     if tracing_task != None:
         if tracing_task.is_alive():
@@ -223,18 +274,14 @@ async def dotraceroute(request):
             tracing_task = None
 
     def commandit(host, nodeid, hopLimit, channelIndex):
-        # try:
-            interface = meshtastic.tcp_interface.TCPInterface(host)   
-            interface.sendTraceRoute(nodeid, hopLimit, channelIndex=channelIndex)
-        # except:
-            # pass
+        interface = meshtastic.tcp_interface.TCPInterface(host)   
+        interface.sendTraceRoute(nodeid, hopLimit, channelIndex=channelIndex)
 
     tracing_task = threading.Thread(target=commandit, args=(host, node_id, hopLimit, channelIndex))
     tracing_task.daemon = True
     tracing_task.start()
 
-    return web.Response(text=json.dumps({"result": "Commanded", "message": f"HOST: {host}, CH{channelIndex}, < {hopLimit} HOPS"}), content_type="text/json")
-
+    return web.Response(text=json.dumps({"result": "Normal", "message": f"Commanded traceroute on Channel {channelIndex}."}), content_type="text/json")
 
 def generate_response(request, body, raw_node_id="", node=None):
     if "HX-Request" in request.headers:

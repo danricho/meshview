@@ -16,3 +16,4 @@ CONFIG = {section: dict(config_parser.items(section)) for section in config_pars
 
 CONFIG['site']['external_footer_links'] = json.loads(CONFIG['site'].get('external_footer_links', '[]'))
 CONFIG['site']['base_map_layers'] = json.loads(CONFIG['site'].get('base_map_layers', '[]'))
+CONFIG['site']['broadcast_message_channels'] = json.loads(CONFIG['site'].get('broadcast_message_channels', '[]'))
