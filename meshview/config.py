@@ -15,3 +15,4 @@ if not config_parser.read(args.config):
 CONFIG = {section: dict(config_parser.items(section)) for section in config_parser.sections()}
 
 CONFIG['site']['external_footer_links'] = json.loads(CONFIG['site'].get('external_footer_links', '[]'))
+CONFIG['site']['base_map_layers'] = json.loads(CONFIG['site'].get('base_map_layers', '[]'))
