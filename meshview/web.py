@@ -28,7 +28,7 @@ import multiprocessing
 
 
 SEQ_REGEX = re.compile(r"seq \d+")
-SOFTWARE_RELEASE= "dr.2025-09-18"
+SOFTWARE_RELEASE= "dr.2025-10-10"
 CONFIG = config.CONFIG
 
 env = Environment(loader=PackageLoader("meshview"), autoescape=select_autoescape())
