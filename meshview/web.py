@@ -216,7 +216,7 @@ async def sendmessage(request):
             local_node_task = None
     
     data = await request.json()
-    print(data)
+    print("SEND MESSAGE DATA", data)
     
     if data.get('destination', None):
       async with asyncio.TaskGroup() as tg:
@@ -241,7 +241,7 @@ async def sendmessage(request):
 
       def broadcastmessage(host, channelIndex, msg):
           interface = meshtastic.tcp_interface.TCPInterface(host)   
-          interface.sendText(msg, channelIndex=1)
+          interface.sendText(msg, channelIndex=int(channelIndex))
 
       local_node_task = multiprocessing.Process(target=broadcastmessage, args=(host, data.get('channel'), data.get('message')))
       # local_node_task = threading.Thread(target=broadcastmessage, args=(host, data.get('channel'), data.get('message')))
