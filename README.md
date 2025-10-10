@@ -3,7 +3,9 @@
 
 The project serves as a real-time monitoring and diagnostic tool for the Meshtastic mesh network. It provides detailed insights into the network's activity, including message traffic, node positions, and telemetry data.
 
-I recommend using the pablorevilla's original fork unless you can follow what i'm doing in my updates (and my messy Git use) [pablorevilla](https://github.com/pablorevilla-meshtastic/meshview).
+I recommend using the pablorevilla's original fork unless you can follow what I'm doing in my updates (and my messy Git use) [pablorevilla](https://github.com/pablorevilla-meshtastic/meshview).
+
+Also see sample.config.ini for config options.
 
 # Significant changes I've done in my fork
 
