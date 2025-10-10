@@ -16,6 +16,7 @@ Also see sample.config.ini for config options.
  - Added Footer Links config option
  - Added using a local TCP node to trigger traceroutes and send messages from the webui.
  - Add configurable Map tile sources.
+ - Add configurable allowed area for nodes on map.
  - Changed the technique for dealing with co-located nodes on the map (circle around the actual position) 
  - Added Node colors to Map based on Node ID
  - Added light edges links on standard map (traceroute lines).

@@ -110,14 +110,20 @@
         {%- set prev = namespace(lat=-1, long=-1, i=0) %}
         {%- set offsets = [(1.0000, 0.0000),(0.5000, 0.8660),(-0.5000, 0.8660),(-1.0000, 0.0000),(-0.5000, -0.8660),(0.5000, -0.8660)] %}
         
-        {#{%- for node in nodes|sort(attribute='role', reverse=True) %}#}
-
         {%- for lat_node_group_value, lat_node_group in nodes | groupby('last_lat') %}
         {%- for long_node_group_value, long_node_group in lat_node_group | groupby('last_long') %}
         {%- for role_node_group_value, role_node_group in long_node_group | groupby('role')|reverse %}
         {%- for node in role_node_group|sort(attribute='short_name', reverse=True) %}
 
-        {%- if node.last_lat is not none and node.last_long is not none %}
+        {%- if node.last_lat is not none and node.last_long is not none %} {# NODE HAS A POSITION #}        
+        {%- if site_config["site"].get("allow_inside_map_top_left_lat", "NOT DEF") == "NOT DEF" or
+          ( 
+            site_config["site"].get("allow_inside_map_top_left_lat")|float > (node.last_lat / 10**7) and
+            (node.last_lat / 10**7) > site_config["site"].get("allow_inside_map_bottom_right_lat")|float and
+            site_config["site"].get("allow_inside_map_top_left_lon")|float < (node.last_long / 10**7) and   
+            (node.last_long / 10**7) < site_config["site"].get("allow_inside_map_bottom_right_lon")|float 
+          )                
+        %} {# NODE IS IN ALLOWED AREA #}
           
           {
               {% if (node.last_lat-prev.lat)|abs < 30 and (node.last_long-prev.long)|abs < 30 -%}      
@@ -151,7 +157,9 @@
           {%- endif %}
           {%- set prev.lat = node.last_lat %}
           {%- set prev.long = node.last_long %}
-        {%- endif %}
+
+        {%- endif %} {# END - NODE IS IN ALLOWED AREA #}
+        {%- endif %} {# END - NODE HAS A POSITION #}        
         {%- endfor %}
         {%- endfor %}
         {%- endfor %}
