@@ -44,11 +44,11 @@
 }
 
 .favorites-btn {
-    background-color: #ffd700;
+    border: none;
+    background-color: #a88f29;
 }
-
 .favorites-btn:hover {
-    background-color: #ffed4e;
+    background-color: #7f6c1f;
 }
 
 td.nowrap {
@@ -77,7 +77,7 @@ td.nowrap {
         <button onclick="find_mine()">{{site_config.get("site", {}).get("search_button", False)}}</button>
         {% endif %}
 
-        <select id="role-filter">
+        <select id="role-filter" class="hide-lt-sm">
             <option value="">All Roles</option>
         </select>
 
@@ -91,18 +91,16 @@ td.nowrap {
 
         <select id="firmware-filter" class="hide"><option value="">All Firmware</option></select>
 
-    <button class="favorites-btn" id="favorites-btn">⭐</button>
-    <button class="export-btn" id="export-btn" style="text-wrap: nowrap;">Export CSV</button>
-    <button class="clear-btn" id="clear-btn" style="text-wrap: nowrap;">Clear Filters</button>
+    <button class="favorites-btn" id="favorites-btn">☆</button>
+    <button class="export-btn hide-lt-xl" id="export-btn" style="text-wrap: nowrap;">Export CSV</button>
+    <button class="clear-btn" id="clear-btn" style="text-wrap: nowrap;">Clear<span class="hide-lt-xl"> Filters</span></button>
 </div>
 
 <div class="count-container">
     Showing <span id="node-count">0</span> nodes
 </div>
 
-<div class="count-container container" style="margin-bottom: calc(var(--pico-spacing));">Showing <span id="node-count">0</span> nodes</div>
-
-<div id="node-list" class="container">
+<div id="node-list">
     <table>
         <thead>
             <tr>
@@ -113,7 +111,7 @@ td.nowrap {
                 <th class="hide-lt-md">Role<span class="sort-icon"></span></th>
                 <th class="hide-lt-xl">Last Position<span class="sort-icon"></span></th>
                 <th class="hide">Channel<span class="sort-icon"></span></th>
-                <th>Updated<span class="sort-icon"></span></th>
+                <th class="hide-lt-sm">Updated<span class="sort-icon"></span></th>
                 <th style="text-align:center;">Fav</th>
             </tr>
         </thead>
@@ -258,10 +256,10 @@ document.addEventListener("DOMContentLoaded", async function() {
     function toggleFavoritesFilter() {
         showOnlyFavorites = !showOnlyFavorites;
         if (showOnlyFavorites) {
-            favoritesBtn.textContent = "⭐";
+            favoritesBtn.textContent = "★";
             favoritesBtn.classList.add("active");
         } else {
-            favoritesBtn.textContent = "⭐";
+            favoritesBtn.textContent = "☆";
             favoritesBtn.classList.remove("active");
         }
         applyFilters();
@@ -322,9 +320,9 @@ document.addEventListener("DOMContentLoaded", async function() {
                     <td class="hide">${node.hw_model || "N/A"}</td>
                     <td class="hide">${node.firmware || "N/A"}</td>
                     <td class="hide-lt-md">${node.role || "N/A"}</td>
-                    <td class="hide-lt-xl">${node.last_lat ? (node.last_lat / 1e7).toFixed(7) : ""}${node.last_long ? ", "+(node.last_long / 1e7).toFixed(7) : "N/A"}</td>
+                    <td class="hide-lt-xl">${node.last_lat ? (node.last_lat / 1e7).toFixed(2) : ""}${node.last_long ? ", "+(node.last_long / 1e7).toFixed(2) : "N/A"}</td>
                     <td class="hide">${node.channel || "N/A"}</td>
-                    <td><span class="hide-lt-lg">${formattedDate} </span>${formattedTime}</td>
+                    <td class="hide-lt-sm"><span class="hide-lt-lg">${formattedDate} </span>${formattedTime}</td>
                     <td style="text-align:center;"><span class="${starClass}" data-node-id="${node.node_id}">${starIcon}</span></td>
                 `;
                 
@@ -343,7 +341,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         sortColumn = "short_name";
         sortAsc = true;
         showOnlyFavorites = false;
-        favoritesBtn.textContent = "⭐";
+        favoritesBtn.textContent = "☆";
         favoritesBtn.classList.remove("active");
         renderTable(allNodes);
         updateSortIcons();
